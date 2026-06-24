@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: CI/CD Devops Pipeline
 
 on:
   push:
@@ -7,8 +7,23 @@ on:
       - dev-1
 
 jobs:
+  # Job 1: Runs on BOTH branches to check for Dockerfile syntax/security issues
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
+  # Job 2: ONLY runs on the main branch to push to production
   build-and-push:
     runs-on: ubuntu-latest
+    needs: lint-dockerfile # Ensures the build only happens if the lint check passes
+    if: github.ref == 'refs/heads/main' # Strictly blocks dev branches from pushing to DockerHub
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -27,5 +42,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/portfolio-site:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/portfolio-site:${{ github.sha }}
 
