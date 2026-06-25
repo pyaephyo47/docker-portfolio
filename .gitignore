@@ -1,1 +1,7 @@
+# Operating System Files
 .DS_Store
+Thumbs.db
+
+# Docker & Local Configurations
+.env
+*.log
